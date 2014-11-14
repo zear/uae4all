@@ -563,6 +563,51 @@ void gui_handle_events (void)
 	Uint8 *keystate = SDL_GetKeyState(NULL);
 
 #ifdef EMULATED_JOYSTICK
+#ifndef DREAMCAST
+	for(i = 0; i < SDL_NumJoysticks(); i++)
+	{
+		SDL_Joystick *joy = i == 0 ? uae4all_joy0 : uae4all_joy1;
+		int joyx = SDL_JoystickGetAxis(joy, 0);	// left-right
+		int joyy = SDL_JoystickGetAxis(joy, 1);	// up-down
+		struct joy_range *dzone = i == 0 ? &dzone0 : &dzone1;
+
+		if(i > 1)
+		{
+			break;
+		}
+
+#if defined(GCW0)
+		if(emulated_mouse || !strcmp(SDL_JoystickName(i), "mxc6225")) // If joystick device is a g-sensor, emulate mouse all the time.
+#else
+		if(emulated_mouse)
+#endif
+		{
+			if (joyx < dzone->minx)
+			{
+				lastmx -= emulated_mouse_speed;
+				newmousecounters = 1;
+			}
+			else
+			if (joyx > dzone->maxx)
+			{
+				lastmx += emulated_mouse_speed;
+				newmousecounters = 1;
+			}
+			if (joyy < dzone->miny)
+			{
+				lastmy -= emulated_mouse_speed;
+				newmousecounters = 1;
+			}
+			else
+			if (joyy > dzone->maxy)
+			{
+				lastmy += emulated_mouse_speed;
+				newmousecounters = 1;
+			}
+		}
+	}
+#endif
+
 	if (keystate[SDLK_ESCAPE])
 	{
 		if (keystate[SDLK_LCTRL])
@@ -631,44 +676,6 @@ void gui_handle_events (void)
 			lastmy += emulated_mouse_speed;
 	    		newmousecounters = 1;
 		}
-
-#ifndef DREAMCAST
-		for(i = 0; i < SDL_NumJoysticks(); i++)
-		{
-			SDL_Joystick *joy = i == 0 ? uae4all_joy0 : uae4all_joy1;
-			int joyx = SDL_JoystickGetAxis(joy, 0);	// left-right
-			int joyy = SDL_JoystickGetAxis(joy, 1);	// up-down
-			struct joy_range *dzone = i == 0 ? &dzone0 : &dzone1;
-
-			if(i > 1)
-			{
-				break;
-			}
-
-			if (joyx < dzone->minx)
-			{
-				lastmx -= emulated_mouse_speed;
-				newmousecounters = 1;
-			}
-			else
-			if (joyx > dzone->maxx)
-			{
-				lastmx += emulated_mouse_speed;
-				newmousecounters = 1;
-			}
-			if (joyy < dzone->miny)
-			{
-				lastmy -= emulated_mouse_speed;
-				newmousecounters = 1;
-			}
-			else
-			if (joyy > dzone->maxy)
-			{
-				lastmy += emulated_mouse_speed;
-				newmousecounters = 1;
-			}
-		}
-#endif
 	}
 	else
 	{

@@ -42,11 +42,22 @@ void read_joystick(int nr, unsigned int *dir, int *button)
     int len, i, num;
     SDL_Joystick *joy = nr == 0 ? uae4all_joy0 : uae4all_joy1;
 
+    // Initialize variables.
+    *dir = 0;
+    *button = 0;
+
+    // Return if no such joystick.
+    if (nr >= SDL_NumJoysticks())
+	return;
+    // Return if emulating mouse.
     if (emulated_mouse)
 	return;
 
-    *dir = 0;
-    *button = 0;
+#if defined(GCW0)
+    // Return if joystick is a g-sensor device
+    if (!strcmp(SDL_JoystickName(nr), "mxc6225"))
+	return;
+#endif
 
     nr = (~nr)&0x1;
 
