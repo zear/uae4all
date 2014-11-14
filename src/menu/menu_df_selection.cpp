@@ -8,11 +8,8 @@
 #include "uae.h"
 #include "options.h"
 #include "sound.h"
-#include "savestate.h"
 #include "disk.h"
 
-
-extern int emulating;
 
 static const char *text_str_title_df_menu="Select disk";
 static const char *text_str_load_df0="Load DF0 image (X)";

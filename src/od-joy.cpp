@@ -28,11 +28,46 @@ extern int emulated_mouse;
 int nr_joysticks;
 
 SDL_Joystick *uae4all_joy0, *uae4all_joy1;
+#if defined(GCW0)
+SDL_Joystick *gcw0_gsensor = NULL;
+#endif
 
+int gsensor_center_x = 0;
+int gsensor_center_y = 0;
+int gsensor_pos_x = 0;
+int gsensor_pos_y = 0;
 
 #ifndef DREAMCAST
 struct joy_range dzone0, dzone1;
 #endif
+
+void probe_gsensor()
+{
+#if defined(GCW0)
+	int i;
+
+	for(i = 0; i < SDL_NumJoysticks(); i++)
+	{
+		SDL_Joystick *joy = i == 0 ? uae4all_joy0 : uae4all_joy1;
+
+		// Joystick device is g-sensor
+		if (!strcmp(SDL_JoystickName(i), "mxc6225"))
+		{
+			gcw0_gsensor = joy;
+			return;
+		}
+	}
+#endif
+}
+
+void calibrate_gsensor()
+{
+	if(gcw0_gsensor)
+	{
+		gsensor_center_x = SDL_JoystickGetAxis(gcw0_gsensor, 0);
+		gsensor_center_y = SDL_JoystickGetAxis(gcw0_gsensor, 1);
+	}
+}
 
 void read_joystick(int nr, unsigned int *dir, int *button)
 {
@@ -55,7 +90,7 @@ void read_joystick(int nr, unsigned int *dir, int *button)
 
 #if defined(GCW0)
     // Return if joystick is a g-sensor device
-    if (!strcmp(SDL_JoystickName(nr), "mxc6225"))
+    if (joy == gcw0_gsensor)
 	return;
 #endif
 
@@ -177,6 +212,10 @@ void init_joystick(void)
 	uae4all_joy1 = SDL_JoystickOpen (1);
     else
 	uae4all_joy1 = NULL;
+
+#if defined(GCW0)
+     probe_gsensor();
+#endif
 
 #ifndef DREAMCAST
     dzone0.minx = -DEADZONE_J0;

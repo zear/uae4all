@@ -6,5 +6,6 @@ Terminal=false
 Type=Application
 StartupNotify=true
 Icon=uae4all
+X-OD-NeedsGSensor=true
 X-OD-Manual=README
 Categories=emulators;

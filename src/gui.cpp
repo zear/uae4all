@@ -71,6 +71,10 @@ extern struct uae_prefs changed_prefs;
 extern struct uae_prefs currprefs;
 extern SDL_Joystick *uae4all_joy0, *uae4all_joy1;
 
+#if defined(GCW0)
+extern SDL_Joystick *gcw0_gsensor;
+#endif
+
 extern int keycode2amiga(SDL_keysym *prKeySym);
 extern int uae4all_keystate[];
 
@@ -570,6 +574,8 @@ void gui_handle_events (void)
 		int joyx = SDL_JoystickGetAxis(joy, 0);	// left-right
 		int joyy = SDL_JoystickGetAxis(joy, 1);	// up-down
 		struct joy_range *dzone = i == 0 ? &dzone0 : &dzone1;
+		int is_gsensor = 0;
+		extern int gsensorMenu_enabled;
 
 		if(i > 1)
 		{
@@ -577,29 +583,32 @@ void gui_handle_events (void)
 		}
 
 #if defined(GCW0)
-		if(emulated_mouse || !strcmp(SDL_JoystickName(i), "mxc6225")) // If joystick device is a g-sensor, emulate mouse all the time.
-#else
-		if(emulated_mouse)
-#endif
+		if(joy == gcw0_gsensor && gsensorMenu_enabled)
 		{
-			if (joyx < dzone->minx)
+			is_gsensor = 1;
+		}
+#endif
+
+		if(emulated_mouse || (is_gsensor && gsensorMenu_enabled)) // If joystick device is a g-sensor, always emulate the mouse.
+		{
+			if (joyx < dzone->minx + (is_gsensor ? gsensor_center_x : 0))
 			{
 				lastmx -= emulated_mouse_speed;
 				newmousecounters = 1;
 			}
 			else
-			if (joyx > dzone->maxx)
+			if (joyx > dzone->maxx + (is_gsensor ? gsensor_center_x : 0))
 			{
 				lastmx += emulated_mouse_speed;
 				newmousecounters = 1;
 			}
-			if (joyy < dzone->miny)
+			if (joyy < dzone->miny + (is_gsensor ? gsensor_center_y : 0))
 			{
 				lastmy -= emulated_mouse_speed;
 				newmousecounters = 1;
 			}
 			else
-			if (joyy > dzone->maxy)
+			if (joyy > dzone->maxy + (is_gsensor ? gsensor_center_y : 0))
 			{
 				lastmy += emulated_mouse_speed;
 				newmousecounters = 1;

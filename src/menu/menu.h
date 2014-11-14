@@ -52,6 +52,7 @@ void menu_unraise(void);
 
 int run_mainMenu();
 int run_menuDfSel();
+int run_menuGsensorSel();
 int run_menuLoad(enum DiskOrder new_df_num);
 int run_menuSave();
 int run_menuGame();
